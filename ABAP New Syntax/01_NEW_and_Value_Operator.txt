@@ -5,6 +5,14 @@
 *&---------------------------------------------------------------------*
 REPORT z_new_value_operator.
 
+---------------------------------------------------------------------------------
+****************Use Ctrl+1 to resolve compile time issues or to create non-existing objects(for e.g. data element while defining table)
+****************Use Ctrl+Space + ShiftEnter for code completion
+****************Use ALT+F8 to RUN ABAP development object in ADT. For e.g. open SE11 (Right click object to show in SAP GUI)
+****************Use Ctrl+Shift+< to comment code in ADT
+****************Use Ctrl+Alt+Down to duplicate a line
+----------------------------------------------------------------------------------
+
 *Difference between Field symbol and reference variable
 *Reference variable with new syntax
 
@@ -16,52 +24,14 @@ REPORT z_new_value_operator.
 *Value operator craete a work area
 *Base operator
 
-TYPES: tt_zemployee_ram TYPE TABLE OF zemployee_ram WITH DEFAULT KEY.
-TYPES: ts_zemployee_ram TYPE zemployee_ram.
 
-DATA:    ls_zemployee_ram1 TYPE REF TO zemployee_ram.
-
-
-*DATA(ls_zemployee_ram) = NEW ts_zemployee_ram( client = sy-mandt
-*                                               id     = '1' name = 'Ram'  age = '30'   ).
-ls_zemployee_ram1 = NEW #( client = sy-mandt
-                                               id     = '1' name = 'Ram'  age = '30'   ).
-
-*DATA(lt_zemployee_ram) = NEW tt_zemployee_ram( ( client = sy-mandt    id     = '1' name = 'Ram'  age = '30' )
-*                                               ( client = sy-mandt    id     = '2' name = 'Ram'  age = '30' )  ).
-
-DATA(ls_zemployee_ram) = VALUE ts_zemployee_ram( client = sy-mandt
-                                              id     = '1' name = 'Ram'  age = '30'   ).
-
-DATA(lt_zemployee_ram) = VALUE tt_zemployee_ram( ( client = sy-mandt    id     = '1' name = 'Ram'  age = '30' )
-                                               ( client = sy-mandt    id     = '2' name = 'Ram'  age = '30' )  ).
-
-DATA lt_zemployee_ram_1 TYPE TABLE OF   zemployee_ram.
-
-lt_zemployee_ram_1 = VALUE #( BASE lt_zemployee_ram (  client = sy-mandt    id     = '3' name = 'Ram'  age = '30' ) ).
-
-cl_demo_output=>display(
-  EXPORTING
-    data = lt_zemployee_ram_1
-*             name =
-).
-
-
-*DATA: lr_obj TYPE REF TO zcl_new_check.
-*CREATE OBJECT lr_obj
-*  EXPORTING
-*    iv_attr = 'ram'
-*  ..
-*
-*DATA(lr_obj1) = NEW zcl_new_check( iv_attr = 'ram'  ).
-
-
+-----------------------------------------------------------------------------------
 *DATA : lv_ref_int TYPE REF TO i.
 *
 *CREATE DATA lv_ref_int.
 *lv_ref_int->* = 1.
 *
-*data(lv_dref2) = NEW i( 1 ).
+*data(lv_dref2) = NEW i( 1 ).  //same as above 3 lines
 *
 *WRITE : lv_dref2->*.
 *
@@ -72,3 +42,73 @@ cl_demo_output=>display(
 *DATA : lv_var1 TYPE i.
 *
 *ASSIGN   lv_var1 TO <fs_int>.
+
+
+-----------------------------------------------------------------------------------
+
+//Old way
+*DATA: lr_obj TYPE REF TO zcl_new_check.
+*CREATE OBJECT lr_obj
+*  EXPORTING
+*    iv_attr = 'ram'
+*  ..
+*
+
+//New way
+*DATA(lr_obj1) = NEW zcl_new_check( iv_attr = 'ram'  ).
+
+--------------------------------------------------------------------------------
+Create table zemployee_ram
+@EndUserText.label : 'Employee table'
+@AbapCatalog.enhancementCategory : #EXTENSIBLE_ANY
+@AbapCatalog.tableCategory : #TRANSPARENT
+@AbapCatalog.deliveryClass : #A
+@AbapCatalog.dataMaintenance : #ALLOWED
+define table zemployee_ram {
+  key client : abap.clnt not null;
+  key id     : char10 not null;
+  name       : char50;
+  age        : zage_r;
+
+}
+
+--------------------------------------------------------------------------------
+******Difference between NEW and VALUE is that NEW will create a data reference pointer, while VALUE will
+******create a data object that can be accessed without dereferencing
+
+TYPES: tt_zemployee_ram TYPE TABLE OF zemployee_ram WITH DEFAULT KEY.
+TYPES: ts_zemployee_ram TYPE zemployee_ram.
+
+//NEW Operator
+//////Structure
+*DATA(ls_zemployee_ram) = NEW ts_zemployee_ram( client = sy-mandt
+*                                               id     = '1' name = 'Ram'  age = '30'   ).
+
+///another way of doing the above, # can be used if the data object type on left side is already defined
+DATA:    ls_zemployee_ram1 TYPE REF TO zemployee_ram.
+ls_zemployee_ram1 = NEW #( client = sy-mandt
+                                               id     = '1' name = 'Ram'  age = '30'   ).
+
+
+///Table
+*DATA(lt_zemployee_ram) = NEW tt_zemployee_ram( ( client = sy-mandt    id     = '1' name = 'Ram'  age = '30' )
+*                                               ( client = sy-mandt    id     = '2' name = 'Ram'  age = '30' )  ).
+
+//Value operator
+DATA(ls_zemployee_ram) = VALUE ts_zemployee_ram( client = sy-mandt
+                                              id     = '1' name = 'Ram'  age = '30'   ).
+
+DATA(lt_zemployee_ram) = VALUE tt_zemployee_ram( ( client = sy-mandt    id     = '1' name = 'Ram'  age = '30' )
+                                               ( client = sy-mandt    id     = '2' name = 'Ram'  age = '30' )  ).
+
+***With # and BASE Operator, BASE will add records of lt_employee_ram first and then add new records as specified
+DATA lt_zemployee_ram_1 TYPE TABLE OF   zemployee_ram.
+
+lt_zemployee_ram_1 = VALUE #( BASE lt_zemployee_ram (  client = sy-mandt    id     = '3' name = 'Ram'  age = '30' ) ).
+
+//Utility class to display value
+cl_demo_output=>display(
+  EXPORTING
+    data = lt_zemployee_ram_1
+*             name =
+).
