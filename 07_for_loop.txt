@@ -12,6 +12,7 @@ REPORT z_for_new_abap.
 *5.  For:-Getting some data from third party want to add date field additional before updating in db tabe
 *6.  For:-C like for loop
 
+///////Code for #5 is missing below. Check video
 
 CLASS demo DEFINITION.
   PUBLIC SECTION.
